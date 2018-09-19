@@ -1,0 +1,10 @@
+<appenders>
+  <Socket name="Graylog_[HOSTNAME]" protocol="udp" host="[HOSTNAME]" port="12201">
+    <GelfLayout host="${hostName}" compressionType="GZIP" compressionThreshold="1024">
+      <KeyValuePair key="jvm" value="${java:vm}" />
+      <KeyValuePair key="application_name" value="opennms" />
+    </GelfLayout>
+  </Socket>
+
+  <appender-ref ref="RoutingAppender"/>
+  <appender-ref ref="Graylog_[HOSTNAME]" />

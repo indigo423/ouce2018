@@ -1,0 +1,5 @@
+<snmp-config xmlns="http://xmlns.opennms.org/xsd/config/snmp" version="v2c" read-community="public" timeout="1800" retry="1">
+   <definition read-community="footer" location="Default">
+      <specific>42.42.42.42</specific>
+   </definition>
+</snmp-config>

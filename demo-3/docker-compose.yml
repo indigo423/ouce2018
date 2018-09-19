@@ -1,0 +1,56 @@
+version: '2.3'
+
+volumes:
+  data-psql:
+    driver: local
+  data-horizon:
+    driver: local
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:10
+    environment:
+      - TZ=Europe/Berlin
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - data-psql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  horizon:
+    container_name: horizon
+    image: opennms/horizon-core-web:22.0.3-1
+    environment:
+      - TZ=Europe/Berlin
+      - JAVA_OPTS=-XX:+UseParallelGC -XX:+PrintFlagsFinal -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
+      - OPENNMS_DBNAME=opennms
+      - OPENNMS_DBUSER=opennms
+      - OPENNMS_DBPASS=opennms
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - data-horizon:/opennms-data
+      - ./opennms-etc:/opt/opennms/etc
+      - ./etc-overlay:/opt/opennms-etc-overlay
+    command: ["-s"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-I", "http://localhost:8980/opennms/login.jsp"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+    ports:
+      - "8980:8980"
+      - "8101:8101"
+
